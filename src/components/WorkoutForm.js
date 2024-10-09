@@ -1,10 +1,13 @@
 import { useState } from "react"
+import { UseWorkoutContext } from "../hooks/WorkoutContexthook"
 
 const WorkoutForm=()=>{
+    const { dispatch }=UseWorkoutContext()
     const [title,settitle]=useState('')
     const [reps,setreps]=useState('')
     const [load,setload]=useState('')
     const [error,seterror]=useState(null)
+    const [emptyfield,setemptyfield]=useState([])
     const handlesubmit=async (e)=>{
         e.preventDefault()
         const workout={title,reps,load}
@@ -17,13 +20,16 @@ const WorkoutForm=()=>{
         const json=await responce.json()
         if(!responce.ok){
             seterror(json.error)
+            setemptyfield(json.emptyfield)
         }
         if (responce.ok){
             seterror(null)
             setload("")
             settitle('')
             setreps('')
+            setemptyfield([])
             console.log("new workout is added")
+            dispatch({type:'CREATE_WORKOUT',payload:json})
 
         }
 
@@ -39,17 +45,20 @@ const WorkoutForm=()=>{
                 <label>Name</label>
                 <input type="text"
                 onChange={(e)=>{settitle(e.target.value)}}
-                value={title}/>
+                value={title}
+                className={emptyfield.includes('title')?'err':''}/>
                 <br/>
                 <label>reps: </label>
                 <input type="number"
                 onChange={(e)=>{setreps(e.target.value)}}
-                value={reps}/>
+                value={reps}
+                className={emptyfield.includes('reps')?'err':''}/>
                 <br/>
                 <label>load(kg): </label>
                 <input type="number"
                 onChange={(e)=>{setload(e.target.value)}}
-                value={load}/>
+                value={load}
+                className={emptyfield.includes('load')?'err':''}/>
                 <br/>
                 <button>Add workout</button>
                 {error && <div className="error">{error}</div>}
